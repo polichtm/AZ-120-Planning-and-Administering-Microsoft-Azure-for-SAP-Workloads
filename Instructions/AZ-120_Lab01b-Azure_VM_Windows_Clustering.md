@@ -17,7 +17,7 @@ Lab files: none
 
 ## Scenario
   
-In preparation for deployment of SAP NetWeaver on Azure, with SQL Server as the database management system, Adatum Corporation wants to explore the process of implementing clustering on Azure VMs running Windows Server 2019.
+In preparation for deployment of SAP NetWeaver on Azure, with SQL Server as the database management system, Adatum Corporation wants to explore the process of implementing clustering on Azure VMs running Windows Server 2022.
 
 ## Objectives
   
@@ -25,7 +25,7 @@ After completing this lab, you will be able to:
 
 -   Provision Azure compute resources necessary to support highly available SAP NetWeaver deployments.
 
--   Configure operating system of Azure VMs running Windows Server 2019 to support a highly available SAP NetWeaver deployment.
+-   Configure operating system of Azure VMs running Windows Server 2022 to support a highly available SAP NetWeaver deployment.
 
 -   Provision Azure network resources necessary to support highly available SAP NetWeaver deployments.
 
@@ -41,7 +41,7 @@ After completing this lab, you will be able to:
 
 Duration: 50 minutes
 
-In this exercise, you will deploy Azure infrastructure compute components necessary to configure Failover Clustering on Azure VMs running Windows Server 2019. This will involve deploying a pair of Active Directory domain controllers, followed by a pair of Azure VMs running Windows Server 2019, each VM will be created as a DC for the new domain and will be placed in separate availability zones, within the same virtual network. To automate the deployment of domain controllers, you will use an Azure Resource Manager QuickStart template available from <https://aka.ms/az120-1bdeploy>
+In this exercise, you will deploy Azure infrastructure compute components necessary to configure Failover Clustering on Azure VMs running Windows Server 2022. This will involve deploying a pair of Active Directory domain controllers, followed by a pair of Azure VMs running Windows Server 2022, each VM will be created as a DC for the new domain and will be placed in separate availability zones, within the same virtual network. To automate the deployment of domain controllers, you will use an Azure Resource Manager QuickStart template available from <https://aka.ms/az120-1bdeploy>
 
 ### Task 1: Deploy a pair of Azure VMs running highly available Active Directory domain controllers by using an Azure Resource Manager template
 
@@ -49,52 +49,66 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
 1.  If prompted, sign in with the work or school or personal Microsoft account with the owner or contributor role to the Azure subscription you will be using for this lab.
 
-1.  Open a new web browser tab, navigate to Azure Quickstart Templates page **Create 2 new Windows VMs, a new AD Forest, Domain and 2 DCs in separate availability zones** at [https://aka.ms/az120-1bdeployzone](https://aka.ms/az120-1bdeployzone), and initiate its deployment by clicking **Deploy to Azure** button.
+1.  In the Azure Portal, start a PowerShell session in Cloud Shell. 
 
-1.  On the **Custom deployment** blade, specify the following settings and click **Review + create**, followed by **Create** to initiate the deployment:
+    > **Note**: If this is the first time you are launching Cloud Shell in the current Azure subscription, you will be asked to create an Azure file share to persist Cloud Shell files. If so, accept the defaults, which will result in creation of a storage account in an automatically generated resource group.
 
-    -   Subscription: *the name of your Azure subscription*
+1. In the Cloud Shell pane, run the following commands to create a shallow clone of the repository hosting the Bicep template you will use for deployment of a pair of Azure VMs running highly available Active Directory domain controllers and set the current directory to the location of that template and its parameter file:
 
-    -   Resource group: *the name of a new resource group* **az12001b-ad-RG**
+    ```
+    git clone --depth 1 https://github.com/polichtm/azure-quickstart-templates
+    cd ./azure-quickstart-templates/application-workloads/active-directory/active-directory-new-domain-ha-2-dc-zones/
+    ```
 
-    -   Region: *the Azure regions in which you have sufficient quotas to deploy the lab VMs*
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to `az12001b-ad-RG`:
 
-    -   Admin Username: **Student**
+    ```
+    $resourceGroupName = 'az12001b-ad-RG'
+    ```
 
-    -   Location: *the Azure regions in which you have sufficient quotas to deploy the lab VMs*
+1.  In the Cloud Shell pane, run the following command, to set the value of the variable `$location` to the name of the Azure regions where you intend to deploy the lab VMs (replace the `<Azure_region>` placeholder with the name of that region):
 
-    > **Note**: Consider using **East US** or **East US2** regions for deployment of your resources. 
+    ```
+    $location = '<Azure_region>'
+    ```
 
-    -   Password: **Pa55w.rd1234**
+1.  In the Cloud Shell pane, run the following command, to set the value of the variable `$deploymentName`:
 
-    -   Domain Name: **adatum.com**
+    ```
+    $deploymentName = 'az1201b-' + $(Get-Date -Format 'yyyy-MM-dd-hh-mm')
+    ```
 
-    -   DnsPrefix: *any unique valid DNS prefix*
+1.  In the Cloud Shell pane, run the following commands, to set the name of the administrative user account and its password (replace the `<username>` and `<password>` placeholders with the name of the administrative user account and the value of its password, respectively):
 
-    -   Pdc RDP Port: **3389**
+    ```
+    $adminUsername = '<username>'
+    $adminPassword = ConvertTo-SecureString '<password>' -AsPlainText -Force
+    ```
 
-    -   Bdc RDP Port: **13389**
+1.  In the Cloud Shell pane, run the following command, to run the deployment:
 
-    -   _artifacts Location: **https://raw.githubusercontent.com/polichtm/azure-quickstart-templates/master/application-workloads/active-directory/active-directory-new-domain-ha-2-dc-zones/**
+    ```
+    New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $rgName -TemplateFile .\main.bicep -TemplateParameterFile .\azuredeploy.parameters.json -adminUsername $adminUsername -adminPassword $adminPassword -c
+    ```
 
-    -   _artifacts Location Sas Token: *leave blank*
+1.  Review the output of the command and verify that it does not include any errors and warnings. When prompted, press the **Enter** key to proceed with the deployment.
 
     > **Note**: The deployment should take about 35 minutes. Wait for the deployment to complete before you proceed to the next task.
 
-    > **Note**: If the deployment fails with the **Conflict** error message during deployment of the CustomScriptExtension component, use the following steps  to remediate this issue:
+    > **Note**: If the deployment fails with the **Conflict** error message during deployment of the CustomScriptExtension component, use the following steps to remediate this issue:
 
-       - In the Azure portal, on the **Deployment** blade, review the deployment details and identify the VM(s) where the installation of the CustomScriptExtension failed
+       - In the Azure portal, on the **Deployment** blade, review the deployment details and identify the VM(s) where the installation of the CustomScriptExtension failed.
 
-       - In the Azure portal, navigate to the blade of the VM(s) you identified in the previous step, select **Extensions**, and from the **Extensions** blade, remove the CustomScript extension
+       - In the Azure portal, navigate to the blade of the VM(s) you identified in the previous step, select **Extensions**, and from the **Extensions** blade, remove the CustomScript extension.
 
-       - Navigate to the GitHub quickstart template at [https://aka.ms/az120-1bdeployzone](https://aka.ms/az120-1bdeployzone), and select **Deploy to Azure**. Once your browser session is redirected to the Azure portal, repeat the last step of this task.
+       - rerun the previous step of this task.
 
 
-### Task 2: Deploy a pair of Azure VMs running Windows Server 2019 in a new availability set.
+### Task 2: Deploy a pair of Azure VMs running Windows Server 2022 in a new availability set.
 
-1.  From the lab computer, in the Azure portal, click **+ Create a resource**.
+1.  From the lab computer, in the Azure portal, navigate to the **Virtual machines** blade, click **+ Create**, and, from the drop-down menu, select **Azure virtual machine**.
 
-1.  From the **New** blade, initiate provisioning of a **Windows Server 2019 Datacenter** Azure VM with the following settings:
+1.  From the **Create a virtual machine** blade, initiate provisioning of a **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM with the following settings:
 
     -   Subscription: *the name of your Azure subscription*
 
@@ -104,17 +118,17 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     -   Region: *the same Azure region where you deployed the Azure VMs in the previous task*
 
-    -   Availability options: **Availability set**
+    -   Availability options: **Availability zone**
 
-    -   Availability set: *a new availability set named* **az12001b-cl-avset** *with 2 fault domains and 5 update domains*
+    -   Availability zone: **Zone 1**
 
-    -   Image: **Windows Server 2019 Datacenter - Gen2**
+    -   Image: **Windows Server 2022 Datacenter: Azure Edition - Gen2**
 
     -   Size: **Standard D4s v3**
 
-    -   Username: **Student**
+    -   Username: *the same username you specified when deploying the Bicep template earlier in this exercise*
 
-    -   Password: **Pa55w.rd1234**
+    -   Password: *the same password you specified when deploying the Bicep template earlier in this exercise*
 
     -   Public inbound ports: **Allow selected ports**
 
@@ -142,17 +156,13 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     -   Place this virtual machine behind an existing load balancing solutions: **No**
 
-    -   Enable basic plan for free: **No**
-
     -   Boot diagnostics: **Disable**
-
-    -   OS guest diagnostics: **Off**
-
-    -   System assigned managed identity: **Off**
 
     -   Login with Azure AD: **Off**
 
     -   Enable auto-shutdown: **Off**
+
+    -   Patch orchestration options: **Manual**
 
     -   Enable backup: **Off**
 
@@ -162,27 +172,27 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
 1.  Do not wait for the provisioning to complete but continue to the next step.
 
-1.  Provision another **Windows Server 2019 Datacenter** Azure VM with the following settings:
+1.  Provision another **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM with the following settings:
 
     -   Subscription: *the name of your Azure subscription*
 
-    -   Resource group: *the name of the resource group you used when deploying the first **Windows Server 2019 Datacenter** Azure VM in this task*
+    -   Resource group: *the name of the resource group you used when deploying the first **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM in this task*
 
     -   Virtual machine name: **az12001b-cl-vm1**
 
-    -   Region: *the same Azure region where you deployed the first **Windows Server 2019 Datacenter** Azure VM in this task*
+    -   Region: *the same Azure region where you deployed the first **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM in this task*
 
-    -   Availability options: **Availability set**
+    -   Availability options: **Availability zone**
 
-    -   Availability set: **az12001b-cl-avset**
+    -   Availability zone: **Zone 2**
 
-    -   Image: **Windows Server 2019 Datacenter - Gen1**
+    -   Image: **Windows Server 2022 Datacenter: Azure Edition - Gen2**
 
     -   Size: **Standard D4s v3**
 
-    -   Username: **Student**
+    -   Username: *the same username you specified when deploying the Bicep template earlier in this exercise*
 
-    -   Password: **Pa55w.rd1234**
+    -   Password: *the same password you specified when deploying the Bicep template earlier in this exercise*
 
     -   Public inbound ports: **Allow selected ports**
 
@@ -208,17 +218,13 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     -   Place this virtual machine behind an existing load balancing solutions: **No**
 
-    -   Enable basic plan for free: **No**
-
     -   Boot diagnostics: **Disable**
-
-    -   OS guest diagnostics: **Off**
-
-    -   System assigned managed identity: **Off**
 
     -   Login with Azure AD: **Off**
 
     -   Enable auto-shutdown: **Off**
+
+    -   Patch orchestration options: **Manual**
 
     -   Enable backup: **Off**
 
@@ -231,8 +237,6 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 ### Task 3: Create and configure Azure VMs disks
 
 1.  In the Azure Portal, start a PowerShell session in Cloud Shell. 
-
-    > **Note**: If this is the first time you are launching Cloud Shell in the current Azure subscription, you will be asked to create an Azure file share to persist Cloud Shell files. If so, accept the defaults, which will result in creation of a storage account in an automatically generated resource group.
 
 1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the resources you provisioned in the previous task:
 
@@ -266,7 +270,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     -   Disk name: **az12001b-cl-vm0-DataDisk0**
 
-    -   Resource group: *the name of the resource group you used when deploying the pair of **Windows Server 2019 Datacenter** Azure VMs in the previous task*
+    -   Resource group: *the name of the resource group you used when deploying the pair of **Windows Server 2022 Datacenter** Azure VMs in the previous task*
 
     -   HOST CACHING: **Read-only**
 
@@ -284,7 +288,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     -   Disk name: **az12001b-cl-vm1-DataDisk0**
 
-    -   Resource group: *the name of the resource group you used when deploying the pair of **Windows Server 2019 Datacenter** Azure VMs in the previous task*
+    -   Resource group: *the name of the resource group you used when deploying the pair of **Windows Server 2022 Datacenter** Azure VMs in the previous task*
 
     -   HOST CACHING: **Read-only**
 
@@ -295,11 +299,11 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 > **Result**: After you completed this exercise, you have provisioned Azure compute resources necessary to support highly available SAP NetWeaver deployments.
 
 
-## Exercise 2: Configure operating system of Azure VMs running Windows Server 2019 to support a highly available SAP NetWeaver installation
+## Exercise 2: Configure operating system of Azure VMs running Windows Server 2022 Datacenter: Azure Edition - Gen2 to support a highly available SAP NetWeaver installation
 
 Duration: 40 minutes
 
-### Task 1: Join Windows Server 2019 Azure VMs to the Active Directory domain.
+### Task 1: Join Windows Server 2022 Datacenter: Azure Edition - Gen2 Azure VMs to the Active Directory domain.
 
    > **Note**: Before you start this task, ensure that the template deployment you initiated in the last task of the previous exercise has successfully completed. 
 
@@ -309,13 +313,13 @@ Duration: 40 minutes
 
 1.  In the Azure Portal, start a PowerShell session in Cloud Shell. 
 
-1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2019 Datacenter** Azure VMs you provisioned in the previous exercise:
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the previous exercise:
 
     ```
     $resourceGroupName = 'az12001b-cl-RG'
     ```
 
-1.  In the Cloud Shell pane, run the following command, to join the Windows Server 2019 Azure VMs you deployed in the second task of the previous exercise to the **adatum.com** Active Directory domain:
+1.  In the Cloud Shell pane, run the following command, to join the Windows Server 2022 Azure VMs you deployed in the second task of the previous exercise to the **adatum.com** Active Directory domain:
 
     ```
     $location = (Get-AzureRmResourceGroup -Name $resourceGroupName).Location
@@ -332,7 +336,7 @@ Duration: 40 minutes
 1.  Wait for the script to complete before proceeding to the next task.
 
 
-### Task 2: Configure storage on Azure VMs running Windows Server 2019 to support a highly available SAP NetWeaver installation.
+### Task 2: Configure storage on Azure VMs running Windows Server 2022 to support a highly available SAP NetWeaver installation.
 
 1.  In the Azure Portal, navigate to the blade of the virtual virtual machine **az12001b-cl-vm0**, which you provisioned in the first exercise of this lab.
 
@@ -412,7 +416,7 @@ Duration: 40 minutes
 
 1.  Repeat the previous step in this task to configure storage on az12001b-cl-vm1.
 
-### Task 3: Prepare for configuration of Failover Clustering on Azure VMs running Windows Server 2019 to support a highly available SAP NetWeaver installation.
+### Task 3: Prepare for configuration of Failover Clustering on Azure VMs running Windows Server 2022 to support a highly available SAP NetWeaver installation.
 
 1.  Within the RDP session to az12001b-cl-vm0, start a Windows PowerShell ISE session and install Failover Clustering and Remote Administrative tools features on both az12001b-cl-vm0 and az12001b-cl-vm1 by running the following:
 
@@ -432,7 +436,7 @@ Duration: 40 minutes
 
     -   Subscription: *the name of your Azure subscription*
 
-    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2019 Datacenter** Azure VMs you provisioned in the previous exercise*
+    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the previous exercise*
 
     -   Storage account name: *any unique name consisting of between 3 and 24 letters and digits*
 
@@ -452,7 +456,7 @@ Duration: 40 minutes
 
     -   Hierarchical namespace: **Disabled**
 
-### Task 4: Configure Failover Clustering on Azure VMs running Windows Server 2019 to support a highly available SAP NetWeaver installation.
+### Task 4: Configure Failover Clustering on Azure VMs running Windows Server 2022 to support a highly available SAP NetWeaver installation.
 
 1.  In the Azure Portal, navigate to the blade of the virtual virtual machine **az12001b-cl-vm0**, which you provisioned in the first exercise of this lab.
 
@@ -528,7 +532,7 @@ Duration: 40 minutes
 
 1.  Terminate the RDP session to az12001b-cl-vm0.
 
-> **Result**: After you completed this exercise, you have configured operating system of Azure VMs running Windows Server 2019 to support a highly available SAP NetWeaver installation
+> **Result**: After you completed this exercise, you have configured operating system of Azure VMs running Windows Server 2022 to support a highly available SAP NetWeaver installation
 
 
 ## Exercise 3: Provision Azure network resources necessary to support highly available SAP NetWeaver deployments
@@ -581,7 +585,7 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
     -   Subscription: *the name of your Azure subscription*
 
-    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2019 Datacenter** Azure VMs you provisioned in the first exercise of this lab*
+    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the first exercise of this lab*
 
     -   Name: **az12001b-cl-lb0**
 
@@ -659,7 +663,7 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
 1.  From the Azure Portal, start a PowerShell session in Cloud Shell. 
 
-1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2019 Datacenter** Azure VMs you provisioned in the first exercise of this lab:
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the first exercise of this lab:
 
     ```
     $resourceGroupName = 'az12001b-cl-RG'
@@ -751,17 +755,17 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
 ### Task 4: Deploy a jump host
 
-   > **Note**: Since two clustered Azure VMs are no longer directly accessible from Internet, you will deploy an Azure VM running Windows Server 2019 Datacenter that will serve as a jump host. 
+   > **Note**: Since two clustered Azure VMs are no longer directly accessible from Internet, you will deploy an Azure VM running Windows Server 2022 Datacenter: Azure Edition - Gen2 that will serve as a jump host. 
 
 1.  From the lab computer, in the Azure portal, click **+ Create a resource**.
 
-1.  From the **New** blade, initiate creation of a new Azure VM based on the **Windows Server 2019 Datacenter** image.
+1.  From the **New** blade, initiate creation of a new Azure VM based on the **Windows Server 2022 Datacenter: Azure Edition - Gen2** image.
 
 1.  Provision a Azure VM with the following settings:
 
     -   Subscription: *the name of your Azure subscription*
 
-    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2019 Datacenter** Azure VMs you provisioned in the first exercise of this lab*
+    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the first exercise of this lab*
 
     -   Virtual machine name: **az12001b-vm2**
 
@@ -769,7 +773,7 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
     -   Availability options: **No infrastructure redundancy required**
 
-    -   Image: **Windows Server 2019 Datacenter - Gen2**
+    -   Image: **Windows Server 2022 Datacenter: Azure Edition - Gen2**
 
     -   Size: **Standard DS1 v2*** or similar*
 
@@ -837,7 +841,7 @@ In this exercise, you will remove resources provisioned in this lab.
 
 1. At the top of the portal, click the **Cloud Shell** icon to open Cloud Shell pane and choose PowerShell as the shell.
 
-1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2019 Datacenter** Azure VMs you provisioned in the first exercise of this lab:
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the first exercise of this lab:
 
     ```
     $resourceGroupNamePrefix = 'az12001b-'
