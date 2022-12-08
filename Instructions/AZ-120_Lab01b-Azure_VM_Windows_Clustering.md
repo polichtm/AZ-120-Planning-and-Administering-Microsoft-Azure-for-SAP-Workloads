@@ -299,11 +299,11 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 > **Result**: After you completed this exercise, you have provisioned Azure compute resources necessary to support highly available SAP NetWeaver deployments.
 
 
-## Exercise 2: Configure operating system of Azure VMs running Windows Server 2022 Datacenter: Azure Edition - Gen2 to support a highly available SAP NetWeaver installation
+## Exercise 2: Configure operating system of Azure VMs running Windows Server 2022 Datacenter to support a highly available SAP NetWeaver installation
 
 Duration: 40 minutes
 
-### Task 1: Join Windows Server 2022 Datacenter: Azure Edition - Gen2 Azure VMs to the Active Directory domain.
+### Task 1: Join Windows Server 2022 Datacenter VMs to the Active Directory domain.
 
    > **Note**: Before you start this task, ensure that the template deployment you initiated in the last task of the previous exercise has successfully completed. 
 
@@ -319,14 +319,14 @@ Duration: 40 minutes
     $resourceGroupName = 'az12001b-cl-RG'
     ```
 
-1.  In the Cloud Shell pane, run the following command, to join the Windows Server 2022 Azure VMs you deployed in the second task of the previous exercise to the **adatum.com** Active Directory domain:
+1.  In the Cloud Shell pane, run the following command, to join the Windows Server 2022 Azure VMs you deployed in the second task of the previous exercise to the **adatum.com** Active Directory domain (replace the `<username>` and `<password>` placeholders with the name and password of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab):
 
     ```
     $location = (Get-AzureRmResourceGroup -Name $resourceGroupName).Location
 
-    $settingString = '{"Name": "adatum.com", "User": "adatum.com\\Student", "Restart": "true", "Options": "3"}'
+    $settingString = '{"Name": "adatum.com", "User": "adatum.com\\<username>", "Restart": "true", "Options": "3"}'
 
-    $protectedSettingString = '{"Password": "Pa55w.rd1234"}'
+    $protectedSettingString = '{"Password": "<password>"}'
 
     $vmNames = @('az12001b-cl-vm0','az12001b-cl-vm1')
 
@@ -340,13 +340,7 @@ Duration: 40 minutes
 
 1.  In the Azure Portal, navigate to the blade of the virtual virtual machine **az12001b-cl-vm0**, which you provisioned in the first exercise of this lab.
 
-1.  From the **az12001b-cl-vm0** blade, connect to the virtual machine guest operating system by using Remote Desktop. When prompted to authenticate, provide the following credentials:
-
-    -   User name: **Student**
-
-    -   Password: **Pa55w.rd1234**
-
-1.  Within the RDP session to az12001b-cl-vm0, in Server Manager, navigate to the **Local Server** view and turn off temporarily **IE Enhanced Security Configuration**.
+1.  From the **az12001b-cl-vm0** blade, connect to the virtual machine guest operating system by using Remote Desktop. When prompted to authenticate, provide the credentials of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab:
 
 1.  Within the RDP session to az12001b-cl-vm0, in Server Manager, navigate to the **File and Storage Services** -> **Servers** node. 
 
@@ -436,7 +430,7 @@ Duration: 40 minutes
 
     -   Subscription: *the name of your Azure subscription*
 
-    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the previous exercise*
+    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2022 Datacenter** Azure VMs you provisioned in the previous exercise*
 
     -   Storage account name: *any unique name consisting of between 3 and 24 letters and digits*
 
@@ -460,11 +454,7 @@ Duration: 40 minutes
 
 1.  In the Azure Portal, navigate to the blade of the virtual virtual machine **az12001b-cl-vm0**, which you provisioned in the first exercise of this lab.
 
-1.  From the **az12001b-cl-vm0** blade, connect to the virtual machine guest operating system by using Remote Desktop. When prompted to authenticate, provide the following credentials:
-
-    -   User name: **Student**
-
-    -   Password: **Pa55w.rd1234**
+1.  From the **az12001b-cl-vm0** blade, connect to the virtual machine guest operating system by using Remote Desktop. When prompted to authenticate, provide the credentials of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
 
 1.  Within the RDP session to az12001b-cl-vm0, from the **Tools** menu in Server Manager, start **Active Directory Administrative Center**.
 
@@ -585,7 +575,7 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
     -   Subscription: *the name of your Azure subscription*
 
-    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the first exercise of this lab*
+    -   Resource group: *the name of the resource group containing the pair of **Windows Server 2022 Datacenter** Azure VMs you provisioned in the first exercise of this lab*
 
     -   Name: **az12001b-cl-lb0**
 
@@ -663,7 +653,7 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
 1.  From the Azure Portal, start a PowerShell session in Cloud Shell. 
 
-1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the first exercise of this lab:
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2022 Datacenter** Azure VMs you provisioned in the first exercise of this lab:
 
     ```
     $resourceGroupName = 'az12001b-cl-RG'
@@ -755,7 +745,7 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
 ### Task 4: Deploy a jump host
 
-   > **Note**: Since two clustered Azure VMs are no longer directly accessible from Internet, you will deploy an Azure VM running Windows Server 2022 Datacenter: Azure Edition - Gen2 that will serve as a jump host. 
+   > **Note**: Since two clustered Azure VMs are no longer directly accessible from Internet, you will deploy an Azure VM running Windows Server 2022 Datacenter that will serve as a jump host. 
 
 1.  From the lab computer, in the Azure portal, click **+ Create a resource**.
 
@@ -777,9 +767,9 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
     -   Size: **Standard DS1 v2*** or similar*
 
-    -   Username: **student**
+    -   Username: *the same username you specified when deploying the Bicep template in the first exercise of this lab*
 
-    -   Password: **Pa55w.rd1234**
+    -   Password: *the same password you specified when deploying the Bicep template in the first exercise of this lab*
 
     -   Public inbound ports: **Allow selected ports**
 
@@ -841,7 +831,7 @@ In this exercise, you will remove resources provisioned in this lab.
 
 1. At the top of the portal, click the **Cloud Shell** icon to open Cloud Shell pane and choose PowerShell as the shell.
 
-1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VMs you provisioned in the first exercise of this lab:
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to the name of the resource group containing the pair of **Windows Server 2022 Datacenter** Azure VMs you provisioned in the first exercise of this lab:
 
     ```
     $resourceGroupNamePrefix = 'az12001b-'
