@@ -90,63 +90,36 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     az network vnet create --resource-group $RESOURCE_GROUP_NAME --location $LOCATION --name $VNET_NAME --address-prefixes $VNET_PREFIX --subnet-name $SUBNET_NAME --subnet-prefixes $SUBNET_PREFIX
     ```
 
-1.  In the Cloud Shell pane, run the following command to identify the Resource Id of the subnet of the newly created virtual network:
+1.  In the Cloud Shell pane, run the following command to identify the Resource Id of the subnet of the newly created virtual network and store it in the SUBNET_ID variable:
 
     ```cli
-    az network vnet subnet list --resource-group $RESOURCE_GROUP_NAME --vnet-name $VNET_NAME --query "[?name == '$SUBNET_NAME'].id" --output tsv
+    SUBNET_ID=$(az network vnet subnet list --resource-group $RESOURCE_GROUP_NAME --vnet-name $VNET_NAME --query "[?name == '$SUBNET_NAME'].id" --output tsv)
     ```
-
-1.  Copy the resulting value to Clipboard. You will need it in the next task.
 
 ### Task 2: Deploy Azure Resource Manager template provisioning Azure VMs running Linux SUSE that will host a highly available SAP NetWeaver deployment
 
-1.  On the lab computer, start a browser and browse to [**https://github.com/Azure/azure-quickstart-templates/tree/master/application-workloads/sap/sap-3-tier-marketplace-image-md**](https://github.com/Azure/azure-quickstart-templates/tree/master/application-workloads/sap/sap-3-tier-marketplace-image-md)
+1.  On the lab computer, in the Cloud Shell pane, run the following commands to create a shallow clone of the repository hosting the Bicep template you will use for deployment of a pair of Azure VMs that will host a highly available installation of SAP HANA and set the current directory to the location of that template and its parameter file:
 
-    > **Note**: Make sure to use Microsoft Edge or a third party browser. Do not use Internet Explorer.
+    ```
+    rm ./azure-quickstart-templates -rf
+    git clone --depth 1 https://github.com/polichtm/azure-quickstart-templates
+    cd ./azure-quickstart-templates/application-workloads/sap/sap-3-tier-marketplace-image-md/
+    ```
 
-1.  On the page titled **SAP NetWeaver 3-tier compatible template using a Marketplace image - MD**, click **Deploy to Azure**. This will automatically redirect your browser to the Azure portal and display the **SAP NetWeaver 3-tier (managed disk)** blade.
+1.  In the Cloud Shell pane, run the following commands, to set the name of the administrative user account and its password (replace the `<username>` and `<password>` placeholders with the name of the administrative user account and the value of its password, respectively):
 
-1.  On the **SAP NetWeaver 3-tier (managed disk)** blade, select **Edit template**.
+    ```
+    ADMINUSERNAME='<username>'
+    ADMINPASSWORD='<password>'
+    ```
 
-1.  On the **Edit template** blade, apply the following changes and select **Save**:
+1.  In the Cloud Shell pane, run the following command, to run the deployment:
 
-    -   in the line **197**, replace `"dbVMSize": "Standard_E8s_v3",` with `"dbVMSize": "Standard_D4s_v3",`
+    ```
+    az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file .\main.bicep --template-parameter-file .\azuredeploy.parameters.json --parameters adminUsername=$ADMINUSERNAME adminPassword $adminPassword -c
+    ```
 
-1.  On the **SAP NetWeaver 3-tier (managed disk)** blade, initiate deployment with the following settings:
-
-    -   Subscription: *the name of your Azure subscription*
-
-    -   Resource group: *the name of the resource group you used in the previous task*
-
-    -   Location: *the same Azure region that you specified in the first task of this exercise*
-
-    -   SAP System Id: **I20**
-
-    -   Stack Type: **ABAP**
-
-    -   Os Type: **SLES 12**
-
-    -   Dbtype: **HANA**
-
-    -   Sap System Size: **Demo**
-
-    -   System Availability: **HA**
-
-    -   Admin Username: **student**
-
-    -   Authentication Type: **password**
-
-    -   Admin Password Or Key: **Pa55w.rd1234**
-
-    -   Subnet Id: *the value you copied into Clipboard in the previous task*
-
-    -   Availability Zones: **1,2**
-
-    -   Location: **[resourceGroup().location]**
-
-    -   _artifacts Location: **https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/application-workloads/sap/sap-3-tier-marketplace-image-md/**
-
-    -   _artifacts Location Sas Token: *leave blank*
+1.  Review the output of the command and verify that it does not include any errors and warnings. When prompted, press the **Enter** key to proceed with the deployment.
 
 1.  Do not wait for the deployment to complete but instead proceed to the next task. 
 
@@ -242,7 +215,7 @@ In this exercise, you will configure Azure VMs running SUSE Linux Enterprise Ser
 
 ### Task 1: Configure networking of the database tier Azure VMs.
 
-   > **Note**: Before you start this task, ensure that the template deployments you initiated in the previous exercise have successfully completed. 
+   > **Note**: Before you start this task, ensure that the Bicep template deployment you initiated in the previous exercise have successfully completed. 
 
 1.  From the lab computer, in the Azure portal, navigate to the blade of the **i20-db-0** Azure VM.
 
