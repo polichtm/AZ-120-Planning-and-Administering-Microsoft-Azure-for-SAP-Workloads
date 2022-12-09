@@ -101,7 +101,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
        - In the Azure portal, navigate to the blade of the VM(s) you identified in the previous step, select **Extensions**, and from the **Extensions** blade, remove the CustomScript extension.
 
-       - rerun the previous step of this task.
+       - Rerun the previous step of this task.
 
 
 ### Task 2: Deploy a pair of Azure VMs running Windows Server 2022 in a new availability set.
@@ -340,7 +340,7 @@ Duration: 40 minutes
 
 1.  In the Azure Portal, navigate to the blade of the virtual virtual machine **az12001b-cl-vm0**, which you provisioned in the first exercise of this lab.
 
-1.  From the **az12001b-cl-vm0** blade, connect to the virtual machine guest operating system by using Remote Desktop. When prompted to authenticate, provide the credentials of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab:
+1.  From the **az12001b-cl-vm0** blade, connect to the virtual machine guest operating system by using Remote Desktop. When prompted to authenticate, provide the credentials of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
 
 1.  Within the RDP session to az12001b-cl-vm0, in Server Manager, navigate to the **File and Storage Services** -> **Servers** node. 
 

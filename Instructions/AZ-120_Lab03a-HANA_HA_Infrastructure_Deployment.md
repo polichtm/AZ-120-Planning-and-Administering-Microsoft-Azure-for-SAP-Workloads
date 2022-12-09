@@ -113,10 +113,18 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     ADMINPASSWORD='<password>'
     ```
 
-1.  In the Cloud Shell pane, run the following command, to run the deployment:
+1.  In the Cloud Shell pane, run the following command to identify resources that will be included in the upcoming deployment:
 
     ```
-    az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file .\main.bicep --template-parameter-file .\azuredeploy.parameters.json --parameters adminUsername=$ADMINUSERNAME adminPassword $adminPassword -c
+    DEPLOYMENT_NAME='az1203a-'$RANDOM
+    az deployment group what-if --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters ./azuredeploy.parameters.json --parameters adminUsername=$ADMINUSERNAME adminPasswordOrKey=$ADMINPASSWORD subnetId=$SUBNET_ID
+    ```
+
+1.  Review the output of the command and verify that it does not include any errors and warnings. Next, in the Cloud Shell pane, run the following command to start the deployment:
+
+    ```
+    DEPLOYMENT_NAME='az1203a-'$RANDOM
+    az deployment group create --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters ./azuredeploy.parameters.json --parameters adminUsername=$ADMINUSERNAME adminPasswordOrKey=$ADMINPASSWORD subnetId=$SUBNET_ID
     ```
 
 1.  Review the output of the command and verify that it does not include any errors and warnings. When prompted, press the **Enter** key to proceed with the deployment.
@@ -129,7 +137,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
        - in the Azure portal, navigate to the blade of the VM(s) you identified in the previous step, select **Extensions**, and from the **Extensions** blade, remove the CustomScript extension
 
-       - in the Azure portal, navigate to the **az12003a-sap-RG** resource group blade, select **Deployments**, select the link to the failed deployment, and select **Redeploy**, select the target resource group (**az12003a-sap-RG**) and provide the password for the root account (**Pa55w.rd1234**).
+       - Rerun the previous step of this task.
 
 
 ### Task 3: Deploy a jump host
@@ -138,7 +146,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
 1.  From the lab computer, in the Azure portal, click **+ Create a resource**.
 
-1.  From the **New** blade, initiate creation of a new Azure VM based on the **Windows Server 2019 Datacenter** image.
+1.  From the **New** blade, initiate creation of a new Azure VM based on the **Windows Server 2022 Datacenter: Azure Edition - Gen2** image.
 
 1.  Provision a Azure VM with the following settings (leave all others with their default values):
 
@@ -152,13 +160,13 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     -   Availability options: **No infrastructure redundancy required**
 
-    -   Image: **Windows Server 2019 Datacenter - Gen2**
+    -   Image: **Windows Server 2022 Datacenter: Azure Edition - Gen2**
 
     -   Size: **Standard D2s_v3** or similar
 
-    -   Username: **Student**
+    -   Username: *the same username you specified when deploying the Bicep template earlier in this exercise*
 
-    -   Password: **Pa55w.rd1234**
+    -   Password: *the same password you specified when deploying the Bicep template earlier in this exercise*
 
     -   Public inbound ports: **Allow selected ports**
 
@@ -183,24 +191,19 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     -   Accelerated networking: **Off**
 
     -   Place this virtual machine behind an existing load balancing solutions: **No**
-
     -   Boot diagnostics: **Disable**
 
-    -   OS guest diagnostics: **Off**
-
-    -   System assigned managed identity: **Off**
-
-    -   Login with AAD credentials (Preview): **Off**
+    -   Login with Azure AD: **Off**
 
     -   Enable auto-shutdown: **Off**
 
+    -   Patch orchestration options: **Manual**
+
     -   Enable backup: **Off**
 
-    -   Patch orchestration options **Manual updates**
+    -   Extensions: *None*
 
-    -   Extensions: **None**
-
-    -   Tags: **None**
+    -   Tags: *None*
 
 1.  Wait for the provisioning to complete. This should take a few minutes.
 
@@ -242,17 +245,11 @@ In this exercise, you will configure Azure VMs running SUSE Linux Enterprise Ser
 
 1.  From the lab computer, in the Azure portal, navigate to the **az12003a-vm0** blade.
 
-1.  From the **az12003a-vm0** blade, connect to the Azure VM az12003a-vm0 via Remote Desktop. 
-
-1.  Within the RDP session to az12003a-vm0, in Server Manager, navigate to the **Local Server** view and turn off **IE Enhanced Security Configuration**.
+1.  From the **az12003a-vm0** blade, connect to the Azure VM az12003a-vm0 via Remote Desktop. When prompted to authenticate, provide the credentials of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
 
 1.  Within the RDP session to az12003a-vm0, download and install PuTTY from [**https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html**](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html).
 
-1.  Use PuTTY to connect via SSH to **i20-db-0** Azure VM. Acknowledge the security alert and, when prompted, provide the following credentials:
-
-    -   Login as: **student**
-
-    -   Password: **Pa55w.rd1234**
+1.  Use PuTTY to connect via SSH to **i20-db-0** Azure VM. Acknowledge the security alert and, when prompted to authenticate, provide the credentials of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
 
 1.  Use PuTTY to connect via SSH to **i20-db-1** Azure VM with the same credentials.
 
@@ -265,7 +262,7 @@ In this exercise, you will configure Azure VMs running SUSE Linux Enterprise Ser
     sudo su -
     ```
 
-1.  If prompted for the password, type **Pa55w.rd1234** and press the **Enter** key. 
+1.  If prompted for the password, type the password you specified when deploying the Bicep template in the first exercise of this lab and press the **Enter** key. 
 
 1.  In the SSH session to i20-db-0, verify that all of the SAP HANA related volumes (including **/usr/sap**, **/hana/shared**, **/hana/backup**, **/hana/data**, and **/hana/logs**) are propertly mounted by running:
 
@@ -588,7 +585,7 @@ In this exercise, you will configure clustering on Azure VMs running Linux to su
 
 ### Task 7: Review clustering configuration on Azure VMs running Linux by using Hawk
 
-1.  Within the RDP session to az12003a-vm0, start Internet Explorer and navigate to **https://i20-db-0:7630**. This should display the SUSE Hawk sign-in page.
+1.  Within the RDP session to az12003a-vm0, start Microsoft Edge and navigate to **https://i20-db-0:7630**. This should display the SUSE Hawk sign-in page.
 
    > **Note**: Ignore **This site is not secure** message.
 
