@@ -41,9 +41,9 @@ After completing this lab, you will be able to:
 
 Duration: 50 minutes
 
-In this exercise, you will deploy Azure infrastructure compute components necessary to configure Failover Clustering on Azure VMs running Windows Server 2022. This will involve deploying a pair of Active Directory domain controllers, followed by a pair of Azure VMs running Windows Server 2022, each VM will be created as a DC for the new domain and will be placed in separate availability zones, within the same virtual network. To automate the deployment of domain controllers, you will use an Azure Resource Manager QuickStart template available from <https://aka.ms/az120-1bdeploy>
+In this exercise, you will deploy Azure infrastructure compute components necessary to configure Failover Clustering on Azure VMs running Windows Server 2022. This will involve deploying a pair of Active Directory domain controllers, followed by a pair of Azure VMs running Windows Server 2022. Each pair of the VMs will be placed in separate availability zones within the same virtual network. To automate the deployment of domain controllers, you will use an Azure Resource Manager QuickStart template available from <https://aka.ms/az120-1bdeploy>
 
-### Task 1: Deploy a pair of Azure VMs running highly available Active Directory domain controllers by using an Azure Resource Manager template
+### Task 1: Deploy a pair of Azure VMs running highly available Active Directory domain controllers by using a Bicep template
 
 1.  From the lab computer, start a Web browser, and navigate to the Azure portal at https://portal.azure.com
 
@@ -56,36 +56,38 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 1. In the Cloud Shell pane, run the following commands to create a shallow clone of the repository hosting the Bicep template you will use for deployment of a pair of Azure VMs running highly available Active Directory domain controllers and set the current directory to the location of that template and its parameter file:
 
     ```
+    cd $HOME
+    rm ./azure-quickstart-templates -rf
     git clone --depth 1 https://github.com/polichtm/azure-quickstart-templates
     cd ./azure-quickstart-templates/application-workloads/active-directory/active-directory-new-domain-ha-2-dc-zones/
     ```
 
-1. In the Cloud Shell pane, run the following command to set the value of the variable `$resourceGroupName` to `az12001b-ad-RG`:
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$rgName` to `az12001b-ad-RG`:
 
     ```
-    $resourceGroupName = 'az12001b-ad-RG'
+    $rgName = 'az12001b-ad-RG'
     ```
 
-1.  In the Cloud Shell pane, run the following command, to set the value of the variable `$location` to the name of the Azure regions where you intend to deploy the lab VMs (replace the `<Azure_region>` placeholder with the name of that region):
+1.  In the Cloud Shell pane, run the following command to set the value of the variable `$location` to the name of the Azure regions where you intend to deploy the lab VMs (replace the `<Azure_region>` placeholder with the name of that region):
 
     ```
     $location = '<Azure_region>'
     ```
 
-1.  In the Cloud Shell pane, run the following command, to set the value of the variable `$deploymentName`:
+1.  In the Cloud Shell pane, run the following command to set the value of the variable `$deploymentName`:
 
     ```
     $deploymentName = 'az1201b-' + $(Get-Date -Format 'yyyy-MM-dd-hh-mm')
     ```
 
-1.  In the Cloud Shell pane, run the following commands, to set the name of the administrative user account and its password (replace the `<username>` and `<password>` placeholders with the name of the administrative user account and the value of its password, respectively):
+1.  In the Cloud Shell pane, run the following commands to set the name of the administrative user account and its password (replace the `<username>` and `<password>` placeholders with the name of the administrative user account and the value of its password, respectively):
 
     ```
     $adminUsername = '<username>'
     $adminPassword = ConvertTo-SecureString '<password>' -AsPlainText -Force
     ```
 
-1.  In the Cloud Shell pane, run the following command, to run the deployment:
+1.  In the Cloud Shell pane, run the following command to run the deployment:
 
     ```
     New-AzResourceGroupDeployment -Name $deploymentName -ResourceGroupName $rgName -TemplateFile .\main.bicep -TemplateParameterFile .\azuredeploy.parameters.json -adminUsername $adminUsername -adminPassword $adminPassword -c
@@ -244,7 +246,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     $resourceGroupName = 'az12001b-cl-RG'
     ```
 
-1.  In the Cloud Shell pane, run the following command, to create the first set of 4 managed disks that you will attach to the first Azure VM you deployed in the previous task:
+1.  In the Cloud Shell pane, run the following command to create the first set of 4 managed disks that you will attach to the first Azure VM you deployed in the previous task:
 
     ```
     $location = (Get-AzResourceGroup -Name $resourceGroupName).Location
@@ -254,7 +256,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     for ($i=0;$i -lt 4;$i++) {New-AzDisk -ResourceGroupName $resourceGroupName -DiskName az12001b-cl-vm0-DataDisk$i -Disk $diskConfig}
     ```
 
-1.  In the Cloud Shell pane, run the following command, to create the second set of 4 managed disks that you will attach to the second Azure VM you deployed in the previous task:
+1.  In the Cloud Shell pane, run the following command to create the second set of 4 managed disks that you will attach to the second Azure VM you deployed in the previous task:
 
     ```
     for ($i=0;$i -lt 4;$i++) {New-AzDisk -ResourceGroupName $resourceGroupName -DiskName az12001b-cl-vm1-DataDisk$i -Disk $diskConfig}
@@ -319,7 +321,7 @@ Duration: 40 minutes
     $resourceGroupName = 'az12001b-cl-RG'
     ```
 
-1.  In the Cloud Shell pane, run the following command, to join the Windows Server 2022 Azure VMs you deployed in the second task of the previous exercise to the **adatum.com** Active Directory domain (replace the `<username>` and `<password>` placeholders with the name and password of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab):
+1.  In the Cloud Shell pane, run the following command to join the Windows Server 2022 Azure VMs you deployed in the second task of the previous exercise to the **adatum.com** Active Directory domain (replace the `<username>` and `<password>` placeholders with the name and password of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab):
 
     ```
     $location = (Get-AzureRmResourceGroup -Name $resourceGroupName).Location

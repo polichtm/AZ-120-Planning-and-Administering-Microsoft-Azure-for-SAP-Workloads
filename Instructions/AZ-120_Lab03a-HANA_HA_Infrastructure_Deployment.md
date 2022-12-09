@@ -96,17 +96,18 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     SUBNET_ID=$(az network vnet subnet list --resource-group $RESOURCE_GROUP_NAME --vnet-name $VNET_NAME --query "[?name == '$SUBNET_NAME'].id" --output tsv)
     ```
 
-### Task 2: Deploy Azure Resource Manager template provisioning Azure VMs running Linux SUSE that will host a highly available SAP NetWeaver deployment
+### Task 2: Deploy a Bicep template that provisions Azure VMs running Linux SUSE which will host a highly available SAP NetWeaver deployment
 
 1.  On the lab computer, in the Cloud Shell pane, run the following commands to create a shallow clone of the repository hosting the Bicep template you will use for deployment of a pair of Azure VMs that will host a highly available installation of SAP HANA and set the current directory to the location of that template and its parameter file:
 
     ```
+    cd $HOME
     rm ./azure-quickstart-templates -rf
     git clone --depth 1 https://github.com/polichtm/azure-quickstart-templates
     cd ./azure-quickstart-templates/application-workloads/sap/sap-3-tier-marketplace-image-md/
     ```
 
-1.  In the Cloud Shell pane, run the following commands, to set the name of the administrative user account and its password (replace the `<username>` and `<password>` placeholders with the name of the administrative user account and the value of its password, respectively):
+1.  In the Cloud Shell pane, run the following commands to set the name of the administrative user account and its password (replace the `<username>` and `<password>` placeholders with the name of the administrative user account and the value of its password, respectively):
 
     ```
     ADMINUSERNAME='<username>'
