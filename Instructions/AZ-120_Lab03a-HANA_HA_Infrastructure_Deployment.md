@@ -161,7 +161,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     -   Image: **Windows Server 2022 Datacenter: Azure Edition - Gen2**
 
-    -   Size: **Standard D2s_v3** or similar
+    -   Size: **Standard D2s_v3** _or similar_
 
     -   Username: *the same username you specified when deploying the Bicep template earlier in this exercise*
 

@@ -317,7 +317,7 @@ In this task, you will deploy the scale-out file server (SOFS) cluster that will
 
     -   Image: **Windows Server 2022 Datacenter: Azure Edition - Gen2**
 
-    -   Size: **Standard DS1 v2*** or similar*
+    -   Size: **Standard DS1 v2** _or similar_
 
     -   Username: *the same username you specified when deploying the Bicep template in the first exercise of this lab*
 
