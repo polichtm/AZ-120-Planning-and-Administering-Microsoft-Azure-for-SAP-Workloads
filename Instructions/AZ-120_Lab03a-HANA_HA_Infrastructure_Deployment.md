@@ -118,7 +118,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     ```
     DEPLOYMENT_NAME='az1203a-'$RANDOM
-    az deployment group what-if --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters ./azuredeploy.parameters.json --parameters adminUsername=$ADMINUSERNAME adminPasswordOrKey=$ADMINPASSWORD subnetId=$SUBNET_ID
+    az deployment group what-if --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters ./azuredeploy.parameters03a.json --parameters adminUsername=$ADMINUSERNAME adminPasswordOrKey=$ADMINPASSWORD subnetId=$SUBNET_ID
     ```
 
 1.  Review the output of the command and verify that it does not include any errors and warnings. Next, in the Cloud Shell pane, run the following command to start the deployment:
@@ -145,11 +145,9 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
    > **Note**: Since Azure VMs you deployed in the previous task are not accessible from Internet, you will deploy an Azure VM running Windows Server 2019 Datacenter that will serve as a jump host. 
 
-1.  From the lab computer, in the Azure portal, click **+ Create a resource**.
+1.  From the lab computer, in the Azure portal, navigate to the **Virtual machines** blade, click **+ Create**, and, from the drop-down menu, select **Azure virtual machine**.
 
-1.  From the **New** blade, initiate creation of a new Azure VM based on the **Windows Server 2022 Datacenter: Azure Edition - Gen2** image.
-
-1.  Provision a Azure VM with the following settings (leave all others with their default values):
+1.  From the **Create a virtual machine** blade, initiate provisioning of a **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM with the following settings (leave all others with their default values):
 
     -   Subscription: *the name of your Azure subscription*
 

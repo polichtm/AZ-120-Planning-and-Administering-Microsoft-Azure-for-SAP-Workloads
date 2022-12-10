@@ -74,6 +74,12 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     $location = '<Azure_region>'
     ```
 
+1.  In the Cloud Shell pane, run the following command to create a resource group named **az12001b-ad-RG** in the Azure region you chose:
+
+    ```
+    New-AzResourceGroup -Name $rgName -Location $location
+    ```
+
 1.  In the Cloud Shell pane, run the following command to set the value of the variable `$deploymentName`:
 
     ```
@@ -110,7 +116,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
 1.  From the lab computer, in the Azure portal, navigate to the **Virtual machines** blade, click **+ Create**, and, from the drop-down menu, select **Azure virtual machine**.
 
-1.  From the **Create a virtual machine** blade, initiate provisioning of a **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM with the following settings:
+1.  From the **Create a virtual machine** blade, initiate provisioning of a **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM with the following settings (leave all others with their default values):
 
     -   Subscription: *the name of your Azure subscription*
 
@@ -749,11 +755,9 @@ In this exercise, you will implement Azure Load Balancers to accommodate cluster
 
    > **Note**: Since two clustered Azure VMs are no longer directly accessible from Internet, you will deploy an Azure VM running Windows Server 2022 Datacenter that will serve as a jump host. 
 
-1.  From the lab computer, in the Azure portal, click **+ Create a resource**.
+1.  From the lab computer, in the Azure portal, navigate to the **Virtual machines** blade, click **+ Create**, and, from the drop-down menu, select **Azure virtual machine**.
 
-1.  From the **New** blade, initiate creation of a new Azure VM based on the **Windows Server 2022 Datacenter: Azure Edition - Gen2** image.
-
-1.  Provision a Azure VM with the following settings:
+1.  From the **Create a virtual machine** blade, initiate provisioning of a **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM with the following settings:
 
     -   Subscription: *the name of your Azure subscription*
 

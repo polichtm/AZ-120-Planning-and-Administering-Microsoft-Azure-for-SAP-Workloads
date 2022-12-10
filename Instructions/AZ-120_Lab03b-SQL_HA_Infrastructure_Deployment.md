@@ -73,6 +73,12 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     $location = '<Azure_region>'
     ```
 
+1.  In the Cloud Shell pane, run the following command to create a resource group named **az12001b-ad-RG** in the Azure region you chose:
+
+    ```
+    New-AzResourceGroup -Name $adRgName -Location $location
+    ```
+
 1.  In the Cloud Shell pane, run the following command to set the value of the variable `$adDeploymentName`:
 
     ```
@@ -118,7 +124,7 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
     $sapAddressPrefix = '10.0.1.0/24'
 
-    $vNet = Get-AzVirtualNetwork -ResourceGroupName $resourceGroupName -Name $vNetName
+    $vNet = Get-AzVirtualNetwork -ResourceGroupName $adRgName -Name $vNetName
 
     Add-AzureRmVirtualNetworkSubnetConfig -Name $sapSubnetName -AddressPrefix $sapAddressPrefix -VirtualNetwork $vNet
 
@@ -137,9 +143,10 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     $vNet | Set-AzureRmVirtualNetwork
     ```
 
-1.  In the Cloud Shell pane, run the following command to identify the Resource Id of the newly created **sapSubnet** and store it in the $sapSubnetId variable:
+1.  In the Cloud Shell pane, run the following commands to identify the Resource Id of the newly created **sapSubnet** and store it in the $sapSubnetId variable:
 
     ```
+    $vNet = Get-AzVirtualNetwork -ResourceGroupName $adRgName -Name $vNetName
     $sapSubnetId = (Get-AzVirtualNetworkSubnetConfig -Name $sapSubnetName -VirtualNetwork $vNet).Id
     ```
 
@@ -158,6 +165,12 @@ In this exercise, you will deploy Azure infrastructure compute components necess
     $sapRgName = 'az12003b-sap-RG'
     ```
 
+1.  In the Cloud Shell pane, run the following command to create a resource group named **az12001b-ad-RG** in the Azure region you chose:
+
+    ```
+    New-AzResourceGroup -Name $sapRgName -Location $location
+    ```
+
 1.  In the Cloud Shell pane, run the following command to set the value of the variable `$sapDeploymentName`:
 
     ```
@@ -167,16 +180,10 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 1.  In the Cloud Shell pane, run the following command to initiate the deployment:
 
     ```
-    New-AzResourceGroupDeployment -Name $sapDeploymentName -ResourceGroupName $sapRgName -TemplateFile .\main.bicep -TemplateParameterFile .\azuredeploy.parameters.json -adminUsername $adminUsername -adminPassword $adminPassword -subnetId $sapSubnetId -c
+    New-AzResourceGroupDeployment -Name $sapDeploymentName -ResourceGroupName $sapRgName -TemplateFile .\main.bicep -TemplateParameterFile .\azuredeploy.parameters03b.json -adminUsername $adminUsername -adminPassword $adminPassword -subnetId $sapSubnetId -c
     ```
 
 1.  Review the output of the command and verify that it does not include any errors and warnings. When prompted, press the **Enter** key to proceed with the deployment.
-
-
-
-
-
-
 
 1.  Do not wait for the deployment to complete but instead proceed to the next task. 
 
@@ -188,122 +195,81 @@ In this exercise, you will deploy Azure infrastructure compute components necess
 
        - Rerun the previous step of this task.
 
-
-
-
-
-
-
-1.  On the lab computer, in the Azure portal, search for and select **Template deployment (deploy using custom template)**.
-
-1.  On the **Custom deployment** blade, in the **Quickstart template (disclaimer)** drop-down list, type **application-workloads/sap/sap-3-tier-marketplace-image-md** and click **Select template**.
-
-    > **Note**: Make sure to use Microsoft Edge or a third party browser. Do not use Internet Explorer.
-
-1.  On the **SAP NetWeaver 3-tier (managed disk)** blade, select **Edit template**.
-
-1.  On the **Edit template** blade, apply the following change and select **Save**:
-
-    -   in the line **197**, replace `"dbVMSize": "Standard_E8s_v3",` with `"dbVMSize": "Standard_D4s_v3",`
-
-1.  Back on the **SAP NetWeaver 3-tier (managed disk)** blade, specify the following settings, click **Review + create**, and then click **Create** to initiate the deployment:
-
-    -   Subscription: *the name of your Azure subscription*
-
-    -   Resource group: *the name of a new resource group* **az12003b-sap-RG**
-
-    -   Location: *the same Azure region that you specified in the first task of this exercise*
-
-    -   SAP System Id: **I20**
-
-    -   Stack Type: **ABAP**
-
-    -   Os Type: **Windows Server 2022 Datacenter: Azure Edition - Gen2**
-
-    -   Dbtype: **SQL**
-
-    -   Sap System Size: **Demo**
-
-    -   System Availability: **HA**
-
-    -   Admin Username: **Student**
-
-    -   Authentication Type: **password**
-
-    -   Admin Password Or Key: **Pa55w.rd1234**
-
-    -   Subnet Id: *the value you copied into Clipboard in the previous task*
-
-    -   Availability Zones: **1,2**
-
-    -   Location: **[resourceGroup().location]**
-
-    -   _artifacts Location: **https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/application-workloads/sap/sap-3-tier-marketplace-image-md/**
-
-    -   _artifacts Location Sas Token: *leave blank*
-
-
 1.  Do not wait for the deployment to complete but instead proceed to the next task. 
 
 ### Task 4: Deploy the Scale-Out File Server (SOFS) cluster
 
-In this task, you will deploy the scale-out file server (SOFS) cluster that will be hosting a file share for the SAP ASCS servers by using an Azure Resource Manager QuickStart template from GitHub available at [**https://github.com/polichtm/301-storage-spaces-direct-md**](https://github.com/polichtm/301-storage-spaces-direct-md). 
+In this task, you will deploy the scale-out file server (SOFS) cluster that will be hosting a file share for the SAP ASCS servers by using a Bicep template based on the Azure Resource Manager QuickStart template from GitHub available at [**https://github.com/polichtm/301-storage-spaces-direct-md**](https://github.com/polichtm/301-storage-spaces-direct-md). 
 
-1.  On the lab computer, start a browser and browse to [**https://github.com/polichtm/301-storage-spaces-direct-md**](https://github.com/polichtm/301-storage-spaces-direct-md). 
+1.  On the lab computer, in the Azure Portal, in the Cloud Shell pane, run the following commands to create a subnet named **sapSubnet** with the address range **10.0.1.0/24** in the virtual network named **adVNET** that was provisioned as part of the Bicep template deployment in the previous task:
 
-1.  On the page titled **Use Managed Disks to Create a Storage Spaces Direct (S2D) Scale-Out File Server (SOFS) Cluster with Windows Server 2022**, click **Deploy to Azure**. This will automatically redirect your browser to the Azure portal and display the **Custom deployment** blade.
+    ```
+    $vNetName = 'adVNet'
 
-1.  From the **Custom deployment** blade, specify the following settings, click **Review + create**, and then click **Create** to initiate the deployment:
+    $sapSubnetName = 'sapSubnet'
 
-    -   Subscription: **Your Azure subscription name**.
+    $sapAddressPrefix = '10.0.1.0/24'
 
-    -   Resource group: *the name of a new resource group* **az12003b-s2d-RG**
+    $vNet = Get-AzVirtualNetwork -ResourceGroupName $adRgName -Name $vNetName
 
-    -   Region: *the same Azure region where you deployed Azure VMs in the previous tasks of this exercise*
+    Add-AzureRmVirtualNetworkSubnetConfig -Name $sapSubnetName -AddressPrefix $sapAddressPrefix -VirtualNetwork $vNet
 
-    -   Name Prefix: **i20**
+    $vNet | Set-AzureRmVirtualNetwork
+    ```
 
-    -   Vm Size: **Standard D4s\_v3**
+1.  In the Azure Portal, in the Cloud Shell pane, run the following commands to create a subnet named **s2dSubnet** with the address range **10.0.2.0/24** in the virtual network named **adVNET** that was provisioned as part of the Bicep template deployment in the previous task:
 
-    -   Enable Accelerated Networking: **true**
+    ```
+    $s2dSubnetName = 's2dSubnet'
 
-    -   Image Sku: **Windows Server 2022 Datacenter: Azure Edition Core- Gen 2**
+    $s2dAddressPrefix = '10.0.2.0/24'
 
-    -   VM Count: **2**
+    Add-AzureRmVirtualNetworkSubnetConfig -Name $s2dSubnetName -AddressPrefix $s2dAddressPrefix -VirtualNetwork $vNet
 
-    -   VM Disk Size: **128**
+    $vNet | Set-AzureRmVirtualNetwork
+    ```
 
-    -   VM Disk Count: **3**
+1.  In the Cloud Shell pane, run the following commands to identify the Resource Id of the newly created **sapSubnet** and store it in the $sapSubnetId variable:
 
-    -   Existing Domain Name: **adatum.com**
+    ```
+    $vNet = Get-AzVirtualNetwork -ResourceGroupName $adRgName -Name $vNetName
+    $sapSubnetId = (Get-AzVirtualNetworkSubnetConfig -Name $sapSubnetName -VirtualNetwork $vNet).Id
+    ```
 
-    -   Admin Username: **Student**
+### Task 3: Deploy a Bicep template that provisions Azure VMs running Windows Server 2022 which will host a highly available SAP NetWeaver deployment
 
-    -   Admin Password: **Pa55w.rd1234**
+1.  On the lab computer, in the Azure Portal, in the Cloud Shell pane, run the following commands to set the current directory to the location of that template and its parameter file:
 
-    -   Existing Virtual Network RG Name: **az12003b-ad-RG**
+    ```
+    cd $HOME
+    cd ./azure-quickstart-templates/application-workloads/sap/sap-3-tier-marketplace-image-md/
+    ```
 
-    -   Existing Virtual Network Name: **adVNet**
+1. In the Cloud Shell pane, run the following command to set the value of the variable `$s2dRgName` to `az12003b-s2d-RG`:
 
-    -   Existing Subnet Name: **s2dSubnet**
+    ```
+    $s2dRgName = 'az12003b-s2d-RG'
+    ```
 
-    -   Sofs Name: **sapglobalhost**
+1.  In the Cloud Shell pane, run the following command to create a resource group named **az12003b-s2d-RG** in the Azure region you chose:
 
-    -   Share Name: **sapmnt**
+    ```
+    New-AzResourceGroup -Name $s2dRgName -Location $location
+    ```
 
-    -   Scheduled Update Day: **Sunday**
+1.  In the Cloud Shell pane, run the following command to set the value of the variable `$sapDeploymentName`:
 
-    -   Scheduled Update Time: **3:00 AM**
+    ```
+    $sapDeploymentName = 'az1203b-' + $(Get-Date -Format 'yyyy-MM-dd-hh-mm')
+    ```
 
-    -   Realtime Antimalware Enabled: **false**
+1.  In the Cloud Shell pane, run the following command to initiate the deployment:
 
-    -   Scheduled Antimalware Enabled: **false**
+    ```
+    New-AzResourceGroupDeployment -Name $sapDeploymentName -ResourceGroupName $s2dRgName -TemplateFile .\main.bicep -TemplateParameterFile .\azuredeploy.parameters03b.json -adminUsername $adminUsername -adminPassword $adminPassword -c
+    ```
 
-    -   Scheduled Antimalware Time: **120**
-
-    -   \_artifacts Location: **https://raw.githubusercontent.com/polichtm/301-storage-spaces-direct-md/master**
-
-    -   \_artifacts Location Sas Token: **Leave the default value**
+1.  Review the output of the command and verify that it does not include any errors and warnings. When prompted, press the **Enter** key to proceed with the deployment.
 
 1.  The deployment might take about 20 minutes. Do not wait for the deployment to complete but instead proceed to the next task.
 
@@ -335,11 +301,9 @@ In this task, you will deploy the scale-out file server (SOFS) cluster that will
 
    > **Note**: Since Azure VMs you deployed in the previous task are not accessible from Internet, you will deploy an Azure VM running Windows Server 2022 Datacenter that will serve as a jump host. 
 
-1.  From the lab computer, in the Azure portal interface, click **+ Create a resource**.
+1.  From the lab computer, in the Azure portal, navigate to the **Virtual machines** blade, click **+ Create**, and, from the drop-down menu, select **Azure virtual machine**.
 
-1.  From the **New** blade, initiate creation of a new Azure VM based on the **Windows Server 2022 Datacenter: Azure Edition - Gen2** image.
-
-1.  Provision a Azure VM with the following settings:
+1.  From the **Create a virtual machine** blade, initiate provisioning of a **Windows Server 2022 Datacenter: Azure Edition - Gen2** Azure VM with the following settings (leave all others with their default values):
 
     -   Subscription: *the name of your Azure subscription*
 
@@ -383,11 +347,11 @@ In this task, you will deploy the scale-out file server (SOFS) cluster that will
 
     -   Place this virtual machine behind an existing load balancing solutions: **No**
 
-    -   Boot diagnostics: **Off**
+    -   Patch ochestration options: **Manual updates**
 
     -   Enable auto-shutdown: **Off**
 
-    -   Enable backup: **Off**
+    -   Boot diagnostics: **Disable**
 
     -   Extensions: *None*
 
@@ -410,7 +374,7 @@ In this exercise, you will configure operating system of Azure VMs running Windo
 
 1.  In the Azure Portal, navigate to the blade of the virtual network named **adVNET**, which was provisioned automatically in the first exercise of this lab.
 
-1.  Display the **adVNET - DNS servers** blade and notice that the virtual network is configured with the private IP addresses assigned to the domain controllers deployed in the first exercise of this lab as its DNS servers.
+1.  Open the **adVNET - DNS servers** blade and verify that the virtual network is configured with the private IP addresses assigned to the domain controllers deployed in the first exercise of this lab as its DNS servers.
 
 1.  In the Azure Portal, start a PowerShell session in Cloud Shell. 
 
@@ -434,24 +398,27 @@ In this exercise, you will configure operating system of Azure VMs running Windo
     foreach ($vmName in $vmNames) { Set-AzVMExtension -ResourceGroupName $resourceGroupName -ExtensionType 'JsonADDomainExtension' -Name 'joindomain' -Publisher "Microsoft.Compute" -TypeHandlerVersion "1.0" -Vmname $vmName -Location $location -SettingString $settingString -ProtectedSettingString $protectedSettingString }
     ```
 
+1.  Wait for the script to complete. This should take a few minutes.
+
+
 ### Task 2: Examine the storage configuration of the database tier Azure VMs.
 
 1.  From the lab computer, in the Azure portal, navigate to the **az12003b-vm0** blade.
 
-1.  From the **az12003b-vm0** blade, connect to the Azure VM az12003b-vm0 via Remote Desktop. When prompted, provide the credentials of the administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
+1.  From the **az12003b-vm0** blade, connect to the Azure VM az12003b-vm0 via Remote Desktop. When prompted, provide the credentials of the administrative user account you specified when deploying this Azure VM by using the Bicep template in the first exercise of this lab.
 
-1.  From the RDP session to az12003b-vm0, use Remote Desktop to connect to **i20-db-0.adatum.com** Azure VM. When prompted, provide the credentials of the adatum.com AD domain administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
+1.  From the Remote Desktop session to az12003b-vm0, use Remote Desktop to connect to **i20-db-0.adatum.com** Azure VM. When prompted, provide the credentials of the adatum.com Active Directory domain administrative user account you specified when deploying the pair of domain controllers using the Bicep template in the first exercise of this lab.
 
 1.  Use Remote Desktop to connect to **i20-db-1.adatum.com** Azure VM with the same credentials.
 
-1.  Within the RDP session to i20-db-0.adatum.com, use File and Storage Services in the Server Manager to examine the disk configuration. Notice that a single data disk has been configured via volume mounts to provide storage for database and log files. 
+1.  Within the Remote Desktop session to i20-db-0.adatum.com, use File and Storage Services in the Server Manager to examine the disk configuration. Notice that a single data disk has been configured via volume mounts to provide storage for database and log files. 
 
-1.  Within the RDP session to i20-db-1.adatum.com, use File and Storage Services in the Server Manager to examine the disk configuration. Notice that a single data disk has been configured via volume mounts to provide storage for database and log files. 
+1.  Within the Remote Desktop session to i20-db-1.adatum.com, use File and Storage Services in the Server Manager to examine the disk configuration. Notice that a single data disk has been configured via volume mounts to provide storage for database and log files. 
 
 
 ### Task 3: Prepare for configuration of Failover Clustering on Azure VMs running Windows Server 2022 to support a highly available SAP NetWeaver installation.
 
-1.  Within the RDP session to i20-db-0.adatum.com, start a Windows PowerShell ISE session and install Failover Clustering and Remote Administrative tools features by running the following on the pair of the ASCS and DB servers that will become nodes of the ASCS and SQL Server clusters, respectively:
+1.  Within the Remote Desktop session to i20-db-0.adatum.com, start a Windows PowerShell ISE session and install Failover Clustering and Remote Administrative tools features by running the following on the pair of the ASCS and DB servers that will become nodes of the ASCS and SQL Server clusters, respectively:
 
     ```
     $nodes = @('i20-ascs-0','i20-ascs-1','i20-db-0','i20-db-1')
@@ -492,15 +459,15 @@ In this exercise, you will configure operating system of Azure VMs running Windo
 
 ### Task 4: Configure Failover Clustering on Azure VMs running Windows Server 2022 to support a highly available database tier of the SAP NetWeaver installation.
 
-1.  If needed, from the RDP session to az12003b-vm0, use Remote Desktop to re-connect to **i20-db-0.adatum.com** Azure VM. When prompted, provide the credentials of the adatum.com AD domain administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
+1.  If needed, from the Remote Desktop session to az12003b-vm0, use Remote Desktop to re-connect to **i20-db-0.adatum.com** Azure VM. When prompted, provide the credentials of the adatum.com AD domain administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
 
-1.  Within the RDP session to i20-db-0.adatum.com, from the **Tools** menu in Server Manager, start **Active Directory Administrative Center**.
+1.  Within the Remote Desktop session to i20-db-0.adatum.com, from the **Tools** menu in Server Manager, start **Active Directory Administrative Center**.
 
 1.  In Active Directory Administrative Center, create a new organizational unit named **Clusters** in the root of the adatum.com domain.
 
 1.  In Active Directory Administrative Center, move the computer accounts of i20-db-0 and i20-db-1 from the **Computers** container to the **Clusters** organizational unit.
 
-1.  Within the RDP session to i20-db-0, start a Windows PowerShell ISE session and create a new cluster by running the following:
+1.  Within the Remote Desktop session to i20-db-0, start a Windows PowerShell ISE session and create a new cluster by running the following:
 
     ```
     $nodes = @('i20-db-0','i20-db-1')
@@ -508,7 +475,7 @@ In this exercise, you will configure operating system of Azure VMs running Windo
     New-Cluster -Name az12003b-db-cl0 -Node $nodes -NoStorage -StaticAddress 10.0.1.15
     ```
 
-1.  Within the RDP session to i20-db-0.adatum.com, switch to the **Active Directory Administrative Center** console.
+1.  Within the Remote Desktop session to i20-db-0.adatum.com, switch to the **Active Directory Administrative Center** console.
 
 1.  In Active Directory Administrative Center, navigate to the **Clusters** organizational unit and display its **Properties** window. 
 
@@ -560,7 +527,7 @@ In this exercise, you will configure operating system of Azure VMs running Windo
     Set-ClusterQuorum -CloudWitness -AccountName $cwStorageAccountName -AccessKey $cwStorageAccountKey
     ```
 
-1.  To verify the resulting configuration, within the RDP session to i20-db-0.adatum.com, from the **Tools** menu in Server Manager, start **Failover Cluster Manager**.
+1.  To verify the resulting configuration, within the Remote Desktop session to i20-db-0.adatum.com, from the **Tools** menu in Server Manager, start **Failover Cluster Manager**.
 
 1.  In the **Failover Cluster Manager** console, review the **az12003b-db-cl0** cluster configuration, including its nodes, as well as its witness and network settings. Notice that the cluster does not have any shared storage.
 
@@ -569,17 +536,17 @@ In this exercise, you will configure operating system of Azure VMs running Windo
 
 > **Note**: Ensure that the deployment of the S2D cluster you initiated in task 4 of exercise 1 has successfully completed before starting this task.
 
-1.  From the RDP session to az12003b-vm0, use Remote Desktop to connect to **i20-ascs-0.adatum.com** Azure VM. When prompted, provide the credentials of the adatum.com AD domain administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
+1.  From the Remote Desktop session to az12003b-vm0, use Remote Desktop to connect to **i20-ascs-0.adatum.com** Azure VM. When prompted, provide the credentials of the adatum.com AD domain administrative user account you specified when deploying the Bicep template in the first exercise of this lab.
 
-1.  Within the RDP session to i20-ascs-0.adatum.com, in Server Manager, navigate to the **Local Server** view and turn off **IE Enhanced Security Configuration**.
+1.  Within the Remote Desktop session to i20-ascs-0.adatum.com, in Server Manager, navigate to the **Local Server** view and turn off **IE Enhanced Security Configuration**.
 
-1.  Within the RDP session to i20-ascs-0.adatum.com, from the **Tools** menu in Server Manager, start **Active Directory Administrative Center**.
+1.  Within the Remote Desktop session to i20-ascs-0.adatum.com, from the **Tools** menu in Server Manager, start **Active Directory Administrative Center**.
 
 1.  In Active Directory Administrative Center, navigate to the **Computers** container. 
 
 1.  In Active Directory Administrative Center, move the computer accounts of i20-ascs-0 and i20-ascs-1 from the **Computers** container to the **Clusters** organizational unit.
 
-1.  Within the RDP session to i20-ascs-0.adatum.com, start a Windows PowerShell ISE session and create a new cluster by running the following:
+1.  Within the Remote Desktop session to i20-ascs-0.adatum.com, start a Windows PowerShell ISE session and create a new cluster by running the following:
 
     ```
     $nodes = @('i20-ascs-0','i20-ascs-1')
@@ -587,7 +554,7 @@ In this exercise, you will configure operating system of Azure VMs running Windo
     New-Cluster -Name az12003b-ascs-cl0 -Node $nodes -NoStorage -StaticAddress 10.0.1.16
     ```
 
-1.  Within the RDP session to i20-ascs-0.adatum.com, switch to the **Active Directory Administrative Center** console.
+1.  Within the Remote Desktop session to i20-ascs-0.adatum.com, switch to the **Active Directory Administrative Center** console.
 
 1.  In Active Directory Administrative Center, navigate to the **Clusters** organizational unit and display its **Properties** window. 
 
@@ -639,7 +606,7 @@ In this exercise, you will configure operating system of Azure VMs running Windo
     Set-ClusterQuorum -CloudWitness -AccountName $cwStorageAccountName -AccessKey $cwStorageAccountKey
     ```
 
-1.  To verify the resulting configuration, Within the RDP session to i20-ascs-0.adatum.com, from the **Tools** menu in Server Manager, start **Failover Cluster Manager**.
+1.  To verify the resulting configuration, Within the Remote Desktop session to i20-ascs-0.adatum.com, from the **Tools** menu in Server Manager, start **Failover Cluster Manager**.
 
 1.  In the **Failover Cluster Manager** console, review the **az12003b-ascs-cl0** cluster configuration, including its nodes, as well as is witness and network settings. Notice that the cluster does not have any shared storage.
 
